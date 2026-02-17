@@ -16,7 +16,7 @@
       <p class="subtitle">Онлайн — 2 или 3 игрока</p>
       <div class="lobby-form">
         <input type="text" id="playerName" placeholder="Ваше имя" maxlength="15">
-        <label class="player-count-label">Игроков в комнате:</label>
+        <label class="player-count-label">Игроков:</label>
         <div class="player-count-select">
           <button class="count-btn active" data-count="2" onclick="selectCount(2)">2</button>
           <button class="count-btn" data-count="3" onclick="selectCount(3)">3</button>
@@ -30,10 +30,10 @@
       </div>
       <div id="waitingMessage" class="waiting-msg" style="display:none;">
         <div class="spinner"></div>
-        <p>Ожидание игроков... <span id="waitingCount"></span></p>
+        <p>Ожидание... <span id="waitingCount"></span></p>
         <p class="room-code">Код: <span id="displayRoomCode"></span></p>
         <button class="btn btn-small" onclick="copyRoomCode()">📋 Копировать</button>
-        <button id="btnStartEarly" class="btn btn-start-early" style="display:none;" onclick="startEarly()">▶ Начать с текущими</button>
+        <button id="btnStartEarly" class="btn btn-start-early" style="display:none;" onclick="startEarly()">▶ Начать</button>
       </div>
     </div>
   </div>
@@ -41,7 +41,16 @@
   <!-- GAME -->
   <div id="gameScreen" class="screen">
 
-    <!-- Top bar mobile -->
+    <!-- Мобильная панель действий — ВСЕГДА ВИДНА -->
+    <div class="mobile-action-bar" id="mobileActionBar">
+      <div class="mobile-dice">
+        <span class="mdice" id="mdice1">⚀</span>
+        <span class="mdice" id="mdice2">⚀</span>
+      </div>
+      <div class="mobile-buttons" id="mobileButtons"></div>
+    </div>
+
+    <!-- Top bar mobile tabs -->
     <div class="top-bar" id="topBar">
       <button class="tab-btn active" data-tab="board" onclick="switchTab('board')">🎲 Поле</button>
       <button class="tab-btn" data-tab="info" onclick="switchTab('info')">👤 Инфо</button>
@@ -52,26 +61,22 @@
       <!-- LEFT PANEL -->
       <div class="side-panel left-panel" id="panelInfo">
         <div id="playersContainer"></div>
-
         <div class="dice-display">
           <div class="dice" id="dice1">⚀</div>
           <div class="dice" id="dice2">⚀</div>
         </div>
-
         <div class="turn-info" id="turnInfo">Ожидание...</div>
-
         <div class="action-buttons" id="actionButtons">
           <button id="btnRoll" class="btn btn-roll" onclick="rollDice()" style="display:none;">🎲 Бросить кубики</button>
           <button id="btnBuy" class="btn btn-buy" onclick="buyProperty()" style="display:none;">💰 Купить</button>
           <button id="btnPass" class="btn btn-pass" onclick="passProperty()" style="display:none;">❌ Пропустить</button>
-          <button id="btnPayFine" class="btn btn-fine" onclick="payJailFine()" style="display:none;">💸 Выйти из тюрьмы (50$)</button>
+          <button id="btnPayFine" class="btn btn-fine" onclick="payJailFine()" style="display:none;">💸 Выйти (50$)</button>
+          <button id="btnForceUnlock" class="btn btn-unlock" onclick="forceUnlock()" style="display:none;">🔓 Пропустить ход</button>
         </div>
-
         <div id="buildSection" class="build-section" style="display:none;">
           <h3>🏗 Строительство</h3>
           <div id="buildableProperties"></div>
         </div>
-
         <button class="btn btn-surrender" onclick="surrender()">🏳 Сдаться</button>
       </div>
 
@@ -88,21 +93,21 @@
         <div class="event-log" id="eventLog"></div>
       </div>
     </div>
+  </div>
 
-    <!-- MODALS -->
-    <div id="modal" class="modal" style="display:none;">
-      <div class="modal-content">
-        <h2 id="modalTitle"></h2>
-        <p id="modalText"></p>
-        <button class="btn btn-primary" onclick="closeModal()">OK</button>
-      </div>
+  <!-- MODALS -->
+  <div id="modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2 id="modalTitle"></h2>
+      <p id="modalText"></p>
+      <button class="btn btn-primary" onclick="closeModal()">OK</button>
     </div>
-    <div id="winModal" class="modal" style="display:none;">
-      <div class="modal-content win-modal">
-        <h1>🏆</h1>
-        <h2 id="winnerText"></h2>
-        <button class="btn btn-primary" onclick="location.reload()">Новая игра</button>
-      </div>
+  </div>
+  <div id="winModal" class="modal" style="display:none;">
+    <div class="modal-content win-modal">
+      <h1>🏆</h1>
+      <h2 id="winnerText"></h2>
+      <button class="btn btn-primary" onclick="location.reload()">Новая игра</button>
     </div>
   </div>
 

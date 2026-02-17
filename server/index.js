@@ -56,14 +56,10 @@ wss.on('connection', (ws) => {
         if (!game) { sendTo(ws, { type: 'error', text: 'Комната не найдена' }); return; }
         if (game.players.length >= game.maxPlayers) { sendTo(ws, { type: 'error', text: 'Комната полна' }); return; }
         if (game.started) { sendTo(ws, { type: 'error', text: 'Игра уже идёт' }); return; }
-
         const playerId = uuidv4();
         game.addPlayer(playerId, msg.name || `Игрок ${game.players.length}`);
         playerSockets.set(ws, { playerId, roomId });
-
         sendTo(ws, { type: 'roomJoined', roomId, playerId, state: game.getState() });
-
-        // Если набрано нужное кол-во — старт
         if (game.players.length >= game.maxPlayers) {
           game.started = true;
           broadcast(roomId, { type: 'gameStarted', state: game.getState() });
@@ -79,8 +75,7 @@ wss.on('connection', (ws) => {
         const game = games.get(info.roomId);
         if (!game || game.started) return;
         if (game.players.length < 2) { sendTo(ws, { type: 'error', text: 'Минимум 2 игрока' }); return; }
-        // Только создатель может стартовать раньше
-        if (game.players[0].id !== info.playerId) { sendTo(ws, { type: 'error', text: 'Только создатель может начать' }); return; }
+        if (game.players[0].id !== info.playerId) { sendTo(ws, { type: 'error', text: 'Только создатель' }); return; }
         game.started = true;
         broadcast(info.roomId, { type: 'gameStarted', state: game.getState() });
         break;
@@ -151,6 +146,17 @@ wss.on('connection', (ws) => {
         broadcast(info.roomId, { type: 'turnResult', events: result.events, state: game.getState() });
         break;
       }
+
+      case 'forceUnlock': {
+        const info = playerSockets.get(ws);
+        if (!info) return;
+        const game = games.get(info.roomId);
+        if (!game || !game.started) return;
+        const result = game.forceUnlock(info.playerId);
+        if (result.error) { sendTo(ws, { type: 'error', text: result.error }); return; }
+        broadcast(info.roomId, { type: 'turnResult', events: result.events, state: game.getState() });
+        break;
+      }
     }
   });
 
@@ -161,15 +167,12 @@ wss.on('connection', (ws) => {
       setTimeout(() => {
         const game = games.get(info.roomId);
         if (game) {
-          const allDisconnected = game.players.every(p => {
-            let found = false;
-            wss.clients.forEach(c => {
-              const ci = playerSockets.get(c);
-              if (ci && ci.playerId === p.id && c.readyState === WebSocket.OPEN) found = true;
-            });
-            return !found;
+          let anyConnected = false;
+          wss.clients.forEach(c => {
+            const ci = playerSockets.get(c);
+            if (ci && ci.roomId === info.roomId && c.readyState === WebSocket.OPEN) anyConnected = true;
           });
-          if (allDisconnected) games.delete(info.roomId);
+          if (!anyConnected) games.delete(info.roomId);
         }
       }, 120000);
       playerSockets.delete(ws);

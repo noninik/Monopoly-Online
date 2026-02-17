@@ -2,68 +2,56 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Монополия Онлайн</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Экран входа -->
+  <!-- LOBBY -->
   <div id="lobby" class="screen active">
     <div class="lobby-container">
-      <h1 class="game-title">🎲 МОНОПОЛИЯ 🎲</h1>
-      <p class="subtitle">Онлайн на 2 игрока</p>
-
+      <h1 class="game-title">🎲 МОНОПОЛИЯ</h1>
+      <p class="subtitle">Онлайн — 2 или 3 игрока</p>
       <div class="lobby-form">
-        <input type="text" id="playerName" placeholder="Ваше имя" maxlength="15" value="">
-
-        <div class="lobby-buttons">
-          <button id="btnCreate" class="btn btn-primary" onclick="createRoom()">
-            🏠 Создать комнату
-          </button>
-
-          <div class="join-section">
-            <input type="text" id="roomCode" placeholder="Код комнаты" maxlength="6">
-            <button id="btnJoin" class="btn btn-secondary" onclick="joinRoom()">
-              🚪 Войти
-            </button>
-          </div>
+        <input type="text" id="playerName" placeholder="Ваше имя" maxlength="15">
+        <label class="player-count-label">Игроков в комнате:</label>
+        <div class="player-count-select">
+          <button class="count-btn active" data-count="2" onclick="selectCount(2)">2</button>
+          <button class="count-btn" data-count="3" onclick="selectCount(3)">3</button>
+        </div>
+        <button id="btnCreate" class="btn btn-primary" onclick="createRoom()">🏠 Создать комнату</button>
+        <div class="divider"><span>или</span></div>
+        <div class="join-section">
+          <input type="text" id="roomCode" placeholder="Код комнаты" maxlength="6">
+          <button class="btn btn-secondary" onclick="joinRoom()">🚪 Войти</button>
         </div>
       </div>
-
       <div id="waitingMessage" class="waiting-msg" style="display:none;">
         <div class="spinner"></div>
-        <p>Ожидание второго игрока...</p>
-        <p class="room-code">Код комнаты: <span id="displayRoomCode"></span></p>
-        <button class="btn btn-small" onclick="copyRoomCode()">📋 Копировать код</button>
+        <p>Ожидание игроков... <span id="waitingCount"></span></p>
+        <p class="room-code">Код: <span id="displayRoomCode"></span></p>
+        <button class="btn btn-small" onclick="copyRoomCode()">📋 Копировать</button>
+        <button id="btnStartEarly" class="btn btn-start-early" style="display:none;" onclick="startEarly()">▶ Начать с текущими</button>
       </div>
     </div>
   </div>
 
-  <!-- Игровой экран -->
+  <!-- GAME -->
   <div id="gameScreen" class="screen">
+
+    <!-- Top bar mobile -->
+    <div class="top-bar" id="topBar">
+      <button class="tab-btn active" data-tab="board" onclick="switchTab('board')">🎲 Поле</button>
+      <button class="tab-btn" data-tab="info" onclick="switchTab('info')">👤 Инфо</button>
+      <button class="tab-btn" data-tab="log" onclick="switchTab('log')">📜 Лог</button>
+    </div>
+
     <div class="game-layout">
-
-      <!-- Левая панель — информация -->
-      <div class="side-panel left-panel">
-        <div class="player-info" id="player1Info">
-          <div class="player-header">
-            <span class="player-token" id="p1Token"></span>
-            <span class="player-name" id="p1Name"></span>
-          </div>
-          <div class="player-money" id="p1Money">$0</div>
-          <div class="player-properties" id="p1Properties"></div>
-        </div>
-
-        <div class="player-info" id="player2Info">
-          <div class="player-header">
-            <span class="player-token" id="p2Token"></span>
-            <span class="player-name" id="p2Name"></span>
-          </div>
-          <div class="player-money" id="p2Money">$0</div>
-          <div class="player-properties" id="p2Properties"></div>
-        </div>
+      <!-- LEFT PANEL -->
+      <div class="side-panel left-panel" id="panelInfo">
+        <div id="playersContainer"></div>
 
         <div class="dice-display">
           <div class="dice" id="dice1">⚀</div>
@@ -73,40 +61,35 @@
         <div class="turn-info" id="turnInfo">Ожидание...</div>
 
         <div class="action-buttons" id="actionButtons">
-          <button id="btnRoll" class="btn btn-roll" onclick="rollDice()" style="display:none;">
-            🎲 Бросить кубики
-          </button>
-          <button id="btnBuy" class="btn btn-buy" onclick="buyProperty()" style="display:none;">
-            💰 Купить
-          </button>
-          <button id="btnPass" class="btn btn-pass" onclick="passProperty()" style="display:none;">
-            ❌ Пропустить
-          </button>
-          <button id="btnPayFine" class="btn btn-fine" onclick="payJailFine()" style="display:none;">
-            💸 Заплатить 50$ (выход из тюрьмы)
-          </button>
+          <button id="btnRoll" class="btn btn-roll" onclick="rollDice()" style="display:none;">🎲 Бросить кубики</button>
+          <button id="btnBuy" class="btn btn-buy" onclick="buyProperty()" style="display:none;">💰 Купить</button>
+          <button id="btnPass" class="btn btn-pass" onclick="passProperty()" style="display:none;">❌ Пропустить</button>
+          <button id="btnPayFine" class="btn btn-fine" onclick="payJailFine()" style="display:none;">💸 Выйти из тюрьмы (50$)</button>
         </div>
 
-        <!-- Строительство -->
         <div id="buildSection" class="build-section" style="display:none;">
           <h3>🏗 Строительство</h3>
           <div id="buildableProperties"></div>
         </div>
+
+        <button class="btn btn-surrender" onclick="surrender()">🏳 Сдаться</button>
       </div>
 
-      <!-- Центр — игровое поле -->
-      <div class="board-container">
-        <div class="board" id="board"></div>
+      <!-- BOARD -->
+      <div class="board-wrapper" id="panelBoard">
+        <div class="board-container" id="boardContainer">
+          <div class="board" id="board"></div>
+        </div>
       </div>
 
-      <!-- Правая панель — лог -->
-      <div class="side-panel right-panel">
-        <h3>📜 Журнал событий</h3>
+      <!-- RIGHT PANEL -->
+      <div class="side-panel right-panel" id="panelLog">
+        <h3>📜 События</h3>
         <div class="event-log" id="eventLog"></div>
       </div>
     </div>
 
-    <!-- Модальное окно -->
+    <!-- MODALS -->
     <div id="modal" class="modal" style="display:none;">
       <div class="modal-content">
         <h2 id="modalTitle"></h2>
@@ -114,8 +97,6 @@
         <button class="btn btn-primary" onclick="closeModal()">OK</button>
       </div>
     </div>
-
-    <!-- Окно победы -->
     <div id="winModal" class="modal" style="display:none;">
       <div class="modal-content win-modal">
         <h1>🏆</h1>

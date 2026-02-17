@@ -338,3 +338,15 @@ function showModal(title,text){
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalText').textContent=text;
   document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none'}
+let toastTO;
+function showToast(text){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.textContent=text;t.style.opacity='1';t.style.display='block';
+  clearTimeout(toastTO);
+  toastTO=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.style.display='none',300)},3000);
+}
+
+connectWS();
